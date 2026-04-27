@@ -11,6 +11,7 @@ class ChurchWebsite {
         // Never block the UI (or loader) on network content.
         this.setupEventListeners();
         this.initializeComponents();
+        this.startServiceCountdown();
         this.handleLoadingScreen();
         this.animateStats();
         this.loadContent();
@@ -19,12 +20,13 @@ class ChurchWebsite {
     async loadContent() {
         try {
             // Load all content files
-            const [hero, about, contact, programs, events] = await Promise.all([
+            const [hero, about, contact, programs, events, testimonies] = await Promise.all([
                 fetch('content/hero.json').then(r => r.json()),
                 fetch('content/about.json').then(r => r.json()),
                 fetch('content/contact.json').then(r => r.json()),
                 this.loadPrograms(),
-                this.loadEvents()
+                this.loadEvents(),
+                this.loadTestimonies()
             ]);
 
             // Populate hero section
@@ -41,6 +43,9 @@ class ChurchWebsite {
             
             // Populate events section
             this.populateEvents(events);
+
+            // Populate testimonies section
+            this.populateTestimonies(testimonies);
             
         } catch (error) {
             console.error('Error loading content:', error);
@@ -103,6 +108,26 @@ class ChurchWebsite {
             });
         } catch (error) {
             console.error('Error loading events:', error);
+            return [];
+        }
+    }
+
+    async loadTestimonies() {
+        try {
+            const response = await fetch('content/testimonies.json');
+            if (!response.ok) {
+                throw new Error('Unable to load content/testimonies.json');
+            }
+
+            const payload = await response.json();
+            const testimonies = Array.isArray(payload) ? payload : payload.testimonies;
+            if (!Array.isArray(testimonies)) return [];
+
+            return testimonies
+                .filter((item) => item && item.message)
+                .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+        } catch (error) {
+            console.error('Error loading testimonies:', error);
             return [];
         }
     }
@@ -260,6 +285,32 @@ class ChurchWebsite {
                 </div>
             `;
         }).join('');
+    }
+
+    populateTestimonies(testimonies) {
+        const container = document.getElementById('testimoniesGrid');
+        if (!container || !Array.isArray(testimonies) || testimonies.length === 0) return;
+
+        const formatDate = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        };
+
+        container.innerHTML = testimonies.slice(0, 6).map((item) => `
+            <article class="testimony-card">
+                <p class="testimony-message">${item.message}</p>
+                <div class="testimony-meta">
+                    <span class="testimony-name">${item.name || 'Anonymous'}</span>
+                    ${item.date ? `<time class="testimony-date" datetime="${item.date}">${formatDate(item.date)}</time>` : ''}
+                </div>
+            </article>
+        `).join('');
     }
 
     setupEventListeners() {
@@ -736,6 +787,130 @@ class ChurchWebsite {
                 }, 300);
             }
         }, 5000);
+    }
+
+    startServiceCountdown() {
+        const daysEl = document.getElementById('countdownDays');
+        const hoursEl = document.getElementById('countdownHours');
+        const minutesEl = document.getElementById('countdownMinutes');
+        const secondsEl = document.getElementById('countdownSeconds');
+        const labelEl = document.getElementById('countdownLabel');
+
+        if (!daysEl || !hoursEl || !minutesEl || !secondsEl || !labelEl) return;
+
+        const schedule = [
+            { name: 'Sunday Knowledge Class', type: 'weekly', day: 0, hour: 9, minute: 0 },
+            { name: 'Sunday Solution Service', type: 'weekly', day: 0, hour: 10, minute: 0 },
+            { name: 'Thursday Word Deeper Truth Hour', type: 'weekly', day: 4, hour: 18, minute: 0 },
+            { name: 'Hour of Solution (1st Thursday)', type: 'monthly_nth_weekday', weekday: 4, nth: 1, hour: 10, minute: 0 },
+            { name: 'Taking Over (Last Day)', type: 'monthly_last_day', hour: 22, minute: 0 }
+        ];
+
+        const pad = (value) => String(value).padStart(2, '0');
+
+        const getNextTarget = (service, now) => {
+            if (service.type === 'weekly') {
+                const target = new Date(now);
+                const dayDiff = (service.day - now.getDay() + 7) % 7;
+                target.setDate(now.getDate() + dayDiff);
+                target.setHours(service.hour, service.minute, 0, 0);
+                if (target <= now) target.setDate(target.getDate() + 7);
+
+                // Special monthly programs override regular Thursday service.
+                if (service.day === 4 && this.isSpecialThursday(target)) {
+                    target.setDate(target.getDate() + 7);
+                }
+                return target;
+            }
+
+            if (service.type === 'monthly_nth_weekday') {
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                const candidate = this.getNthWeekdayOfMonth(year, month, service.weekday, service.nth, service.hour, service.minute);
+                if (candidate > now) return candidate;
+                return this.getNthWeekdayOfMonth(year, month + 1, service.weekday, service.nth, service.hour, service.minute);
+            }
+
+            if (service.type === 'monthly_last_day') {
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                const candidate = this.getLastDayOfMonth(year, month, service.hour, service.minute);
+                if (candidate > now) return candidate;
+                return this.getLastDayOfMonth(year, month + 1, service.hour, service.minute);
+            }
+
+            return null;
+        };
+
+        const getNextService = () => {
+            const now = new Date();
+            let nextService = null;
+
+            schedule.forEach((service) => {
+                const target = getNextTarget(service, now);
+                if (!target) return;
+
+                if (!nextService || target < nextService.target) {
+                    nextService = { ...service, target };
+                }
+            });
+
+            return nextService;
+        };
+
+        const updateCountdown = () => {
+            const nextService = getNextService();
+            if (!nextService) return;
+
+            const diffMs = nextService.target - new Date();
+            if (diffMs <= 0) return;
+
+            const totalSeconds = Math.floor(diffMs / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const timeText = new Date(
+                2000,
+                0,
+                1,
+                nextService.hour,
+                nextService.minute
+            ).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+            labelEl.textContent = `${nextService.name} • ${timeText}`;
+            daysEl.textContent = pad(days);
+            hoursEl.textContent = pad(hours);
+            minutesEl.textContent = pad(minutes);
+            secondsEl.textContent = pad(seconds);
+        };
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
+    getNthWeekdayOfMonth(year, month, weekday, nth, hour, minute) {
+        const date = new Date(year, month, 1, hour, minute, 0, 0);
+        const firstWeekdayOffset = (weekday - date.getDay() + 7) % 7;
+        const dayOfMonth = 1 + firstWeekdayOffset + (nth - 1) * 7;
+        return new Date(year, month, dayOfMonth, hour, minute, 0, 0);
+    }
+
+    getLastDayOfMonth(year, month, hour, minute) {
+        return new Date(year, month + 1, 0, hour, minute, 0, 0);
+    }
+
+    isSpecialThursday(date) {
+        const day = date.getDay();
+        if (day !== 4) return false;
+
+        const dayOfMonth = date.getDate();
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        const isLastDay = dayOfMonth === lastDay;
+        const isFirstThursday = dayOfMonth <= 7;
+
+        return isFirstThursday || isLastDay;
     }
 
     debounce(func, wait) {

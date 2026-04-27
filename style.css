@@ -429,6 +429,60 @@ a:hover {
     flex-wrap: wrap;
 }
 
+.next-service-countdown {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    border: 1px solid rgba(255, 212, 59, 0.35);
+    border-radius: var(--radius-md);
+    background: rgba(15, 15, 15, 0.55);
+    backdrop-filter: blur(4px);
+    max-width: 560px;
+}
+
+.countdown-title {
+    margin-bottom: var(--spacing-xs);
+    color: var(--primary-gold);
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.countdown-label {
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-light);
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(70px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.countdown-item {
+    text-align: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.countdown-value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--primary-gold);
+    line-height: 1.1;
+}
+
+.countdown-unit {
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
 .hero-visual {
     display: flex;
     justify-content: center;
@@ -469,6 +523,8 @@ a:hover {
 }
 
 .scroll-text {
+    top: 50px;
+    position: relative;
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -952,6 +1008,49 @@ a:hover {
 /* Prayer Section */
 .prayer-section {
     background: var(--primary-dark);
+}
+
+/* Testimonies Section */
+.testimonies-section {
+    background: linear-gradient(135deg, var(--secondary-card) 0%, var(--secondary-bg) 100%);
+}
+
+.testimonies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.testimony-card {
+    background: rgba(30, 30, 30, 0.92);
+    border: 1px solid var(--secondary-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.testimony-message {
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.testimony-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.92rem;
+}
+
+.testimony-name {
+    color: var(--primary-gold);
+    font-weight: 600;
+}
+
+.testimony-date {
+    opacity: 0.8;
 }
 
 .prayer-content {
@@ -1533,6 +1632,11 @@ a:hover {
         justify-content: center;
     }
 
+    .next-service-countdown {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     .about-content {
         grid-template-columns: 1fr;
     }
@@ -1565,6 +1669,10 @@ a:hover {
         width: 220px;
         height: 220px;
         margin: 0 auto;
+    }
+
+    .countdown-grid {
+        grid-template-columns: repeat(2, minmax(90px, 1fr));
     }
 
     .live-grid,

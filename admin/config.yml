@@ -71,6 +71,22 @@ collections:
               - {label: "Event Description", name: "description", widget: "text", required: false}
               - {label: "Featured", name: "featured", widget: "boolean", default: false, required: false}
 
+  - name: "testimonies"
+    label: "Testimonies"
+    files:
+      - label: "Recent Testimonies"
+        name: "recent_testimonies"
+        file: "content/testimonies.json"
+        fields:
+          - label: "Testimonies"
+            name: "testimonies"
+            widget: "list"
+            summary: "{{fields.name}} - {{fields.date}}"
+            fields:
+              - {label: "Name", name: "name", widget: "string", required: false}
+              - {label: "Message", name: "message", widget: "text"}
+              - {label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false, required: false}
+
   - name: "programs"
     label: "Programs/Services"
     folder: "content/programs"
