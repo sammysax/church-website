@@ -8,15 +8,268 @@ class ChurchWebsite {
     }
 
     init() {
+        // Never block the UI (or loader) on network content.
         this.setupEventListeners();
         this.initializeComponents();
         this.handleLoadingScreen();
         this.animateStats();
+        this.loadContent();
+    }
+
+    async loadContent() {
+        try {
+            // Load all content files
+            const [hero, about, contact, programs, events] = await Promise.all([
+                fetch('content/hero.json').then(r => r.json()),
+                fetch('content/about.json').then(r => r.json()),
+                fetch('content/contact.json').then(r => r.json()),
+                this.loadPrograms(),
+                this.loadEvents()
+            ]);
+
+            // Populate hero section
+            this.populateHero(hero);
+            
+            // Populate about section
+            this.populateAbout(about);
+            
+            // Populate contact section
+            this.populateContact(contact);
+            
+            // Populate programs section
+            this.populatePrograms(programs);
+            
+            // Populate events section
+            this.populateEvents(events);
+            
+        } catch (error) {
+            console.error('Error loading content:', error);
+            // If content fails to load, site will use default HTML content
+        }
+    }
+
+    async loadPrograms() {
+        try {
+            // Try to load programs list first
+            const listResponse = await fetch('content/programs-list.json');
+            if (listResponse.ok) {
+                const fileList = await listResponse.json();
+                if (Array.isArray(fileList)) {
+                    const programs = await Promise.all(
+                        fileList.map(file => 
+                            fetch(`content/programs/${file}`)
+                                .then(r => r.json())
+                                .catch(() => null)
+                        )
+                    );
+                    return programs.filter(p => p !== null);
+                }
+            }
+            
+            // Fallback: try loading known program files
+            const knownFiles = ['sunday.json', 'last-day-month.json', 'thursday.json', 'first-thursday.json'];
+            const programs = await Promise.all(
+                knownFiles.map(file => 
+                    fetch(`content/programs/${file}`)
+                        .then(r => r.json())
+                        .catch(() => null)
+                )
+            );
+            return programs.filter(p => p !== null);
+        } catch (error) {
+            console.error('Error loading programs:', error);
+            return [];
+        }
+    }
+
+    async loadEvents() {
+        try {
+            // Primary source: one managed events file edited via CMS.
+            const response = await fetch('content/events.json');
+            if (!response.ok) {
+                throw new Error('Unable to load content/events.json');
+            }
+
+            const payload = await response.json();
+            const events = Array.isArray(payload) ? payload : payload.events;
+            if (!Array.isArray(events)) {
+                throw new Error('Invalid events payload format');
+            }
+
+            return events.filter(e => e && e.date).sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateA - dateB;
+            });
+        } catch (error) {
+            console.error('Error loading events:', error);
+            return [];
+        }
+    }
+
+    populateHero(data) {
+        const titleLine1 = document.querySelector('.hero-title .title-line:first-child');
+        const titleLine2 = document.querySelector('.hero-title .title-line:last-child');
+        const subtitle = document.querySelector('.hero-subtitle');
+        const primaryBtn = document.querySelector('.hero-actions .btn-primary');
+        const secondaryBtn = document.querySelector('.hero-actions .btn-secondary');
+
+        if (titleLine1 && data.titleLine1) titleLine1.textContent = data.titleLine1;
+        if (titleLine2 && data.titleLine2) titleLine2.textContent = data.titleLine2;
+        if (subtitle && data.subtitle) subtitle.textContent = data.subtitle;
+        if (primaryBtn && data.primaryButtonText) primaryBtn.textContent = data.primaryButtonText;
+        if (secondaryBtn && data.secondaryButtonText) {
+            secondaryBtn.textContent = data.secondaryButtonText;
+            if (data.secondaryButtonLink) secondaryBtn.href = data.secondaryButtonLink;
+        }
+    }
+
+    populateAbout(data) {
+        const superintendent = document.querySelector('.about-card:has(h3:contains("Leadership")) p strong');
+        const missionCard = document.querySelector('.about-card:has(h3:contains("Mission")) p');
+        const visionCard = document.querySelector('.about-card:has(h3:contains("Vision")) p');
+        const valuesList = document.querySelector('.values-list');
+        const communityStat = document.getElementById('community-members-stat');
+        const yearsStat = document.querySelector('.stat-item:last-child .stat-number');
+
+        // Update superintendent
+        const leadershipCard = Array.from(document.querySelectorAll('.about-card')).find(card => 
+            card.querySelector('h3')?.textContent.includes('Leadership')
+        );
+        if (leadershipCard && data.superintendent) {
+            const p = leadershipCard.querySelector('p');
+            if (p) p.innerHTML = `<strong>General Superintendent:</strong> ${data.superintendent}`;
+        }
+
+        // Update mission
+        const missionCardEl = Array.from(document.querySelectorAll('.about-card')).find(card => 
+            card.querySelector('h3')?.textContent.includes('Mission')
+        );
+        if (missionCardEl && data.mission) {
+            const p = missionCardEl.querySelector('p');
+            if (p) p.textContent = data.mission;
+        }
+
+        // Update vision
+        const visionCardEl = Array.from(document.querySelectorAll('.about-card')).find(card => 
+            card.querySelector('h3')?.textContent.includes('Vision')
+        );
+        if (visionCardEl && data.vision) {
+            const p = visionCardEl.querySelector('p');
+            if (p) p.textContent = data.vision;
+        }
+
+        // Update values
+        if (valuesList && data.values && Array.isArray(data.values)) {
+            valuesList.innerHTML = data.values.map(value => 
+                `<li>${value}</li>`
+            ).join('');
+        }
+
+        // Update stats
+        if (communityStat && data.communityMembers) {
+            communityStat.setAttribute('data-target', data.communityMembers);
+        }
+        if (yearsStat && data.yearsOfService) {
+            yearsStat.setAttribute('data-target', data.yearsOfService);
+        }
+    }
+
+    populateContact(data) {
+        const addressCard = Array.from(document.querySelectorAll('.contact-card')).find(card => 
+            card.querySelector('h3')?.textContent.includes('Visit')
+        );
+        const phoneCard = Array.from(document.querySelectorAll('.contact-card')).find(card => 
+            card.querySelector('h3')?.textContent.includes('Call')
+        );
+        const emailCard = Array.from(document.querySelectorAll('.contact-card')).find(card => 
+            card.querySelector('h3')?.textContent.includes('Email')
+        );
+
+        if (addressCard && data.address) {
+            const p = addressCard.querySelector('p');
+            if (p) p.textContent = data.address;
+        }
+        if (phoneCard && data.phone) {
+            const p = phoneCard.querySelector('p');
+            if (p) {
+                const link = p.querySelector('a') || document.createElement('a');
+                link.href = `tel:${data.phone}`;
+                link.textContent = data.phone;
+                if (!p.querySelector('a')) p.appendChild(link);
+            }
+        }
+        if (emailCard && data.email) {
+            const p = emailCard.querySelector('p');
+            if (p) {
+                const link = p.querySelector('a') || document.createElement('a');
+                link.href = `mailto:${data.email}`;
+                link.textContent = data.email;
+                if (!p.querySelector('a')) p.appendChild(link);
+            }
+        }
+    }
+
+    populatePrograms(programs) {
+        const programsContainer = document.querySelector('.programs-schedule');
+        if (!programsContainer || !programs || programs.length === 0) return;
+
+        programsContainer.innerHTML = programs.map(program => `
+            <div class="program-item">
+                <div class="program-day">
+                    <span class="day-text">${program.day}</span>
+                </div>
+                <div class="program-details">
+                    <h3>${program.name}</h3>
+                    <div class="program-times">
+                        ${program.times.map(time => `<span class="time-slot">${time}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    populateEvents(events) {
+        const eventsContainer = document.querySelector('.events-grid');
+        if (!eventsContainer || !events || events.length === 0) return;
+
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.toLocaleString('en-US', { month: 'short' });
+            const year = date.getFullYear();
+            return { day, month, year };
+        };
+
+        eventsContainer.innerHTML = events.map(event => {
+            const { day, month, year } = formatDate(event.date);
+            return `
+                <div class="event-card">
+                    <div class="event-date">
+                        <span class="date-day">${day}</span>
+                        <span class="date-month">${month}</span>
+                        <span class="date-year">${year}</span>
+                    </div>
+                    <div class="event-content">
+                        ${event.tag ? `<span class="event-tag">${event.tag}</span>` : ''}
+                        <h3>${event.title}</h3>
+                        ${event.time ? `<p class="event-time">${event.time}</p>` : ''}
+                        ${event.description ? `<p class="event-description">${event.description}</p>` : ''}
+                        <a href="#contact" class="event-link">Learn More</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     setupEventListeners() {
         // Navigation
         document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => this.handleNavigation(e));
+        });
+
+        // Footer quick links
+        document.querySelectorAll('.footer-links a').forEach(link => {
             link.addEventListener('click', (e) => this.handleNavigation(e));
         });
 
@@ -66,24 +319,47 @@ class ChurchWebsite {
     handleLoadingScreen() {
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
-            // Hide loading screen after content loads
-            window.addEventListener('load', () => {
+            const hide = () => {
+                if (loadingScreen.classList.contains('hidden')) return;
+                loadingScreen.classList.add('hidden');
                 setTimeout(() => {
-                    loadingScreen.classList.add('hidden');
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }, 1000);
-            });
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            };
+
+            // Preferred: hide after page fully loads.
+            window.addEventListener('load', () => setTimeout(hide, 400));
+
+            // Fallback: if any network request hangs, never keep users stuck.
+            setTimeout(hide, 4500);
         }
     }
 
     handleNavigation(e) {
         e.preventDefault();
-        const targetSection = e.target.getAttribute('data-section');
+        const clickedLink = e.currentTarget;
+        let targetSection = clickedLink.getAttribute('data-section');
+        
+        // If no data-section attribute, try to get section ID from href
+        if (!targetSection) {
+            const href = clickedLink.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                targetSection = href.substring(1); // Remove the # prefix
+            }
+        }
         
         if (targetSection && targetSection !== this.currentSection) {
             this.navigateToSection(targetSection);
+        }
+        
+        // Close mobile menu after navigation on mobile devices
+        if (this.isMobile) {
+            const navToggle = document.querySelector('.nav-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            if (navToggle && navMenu && navMenu.classList.contains('active')) {
+                this.toggleMobileMenu(navToggle, navMenu);
+            }
         }
     }
 
@@ -207,7 +483,19 @@ class ChurchWebsite {
 
     handleSmoothScroll(e) {
         e.preventDefault();
-        const targetId = e.target.getAttribute('href');
+        const clickedLink = e.currentTarget;
+        const targetId = clickedLink.getAttribute('href');
+        if (!targetId || !targetId.startsWith('#')) return;
+
+        const targetSectionId = targetId.substring(1);
+        const targetSection = document.getElementById(targetSectionId);
+
+        // Sections are shown/hidden in this single-page layout, so switch section first.
+        if (targetSection && targetSection.classList.contains('section')) {
+            this.navigateToSection(targetSectionId);
+            return;
+        }
+
         const targetElement = document.querySelector(targetId);
         
         if (targetElement) {
@@ -334,7 +622,6 @@ class ChurchWebsite {
 
     async handlePrayerForm(e) {
         e.preventDefault();
-        
         const form = e.target;
         const submitBtn = form.querySelector('.btn');
         const btnText = submitBtn.querySelector('.btn-text');
@@ -351,17 +638,14 @@ class ChurchWebsite {
         submitBtn.disabled = true;
         
         try {
-            // Simulate form submission (replace with actual API call)
-            await this.submitPrayerRequest(form);
-            
-            // Show success message
-            this.showNotification('Prayer request submitted successfully! We will lift you up in prayer.', 'success');
+            await this.submitPrayerForm(form);
+            this.showNotification('Prayer request / testimony submitted successfully.', 'success');
             form.reset();
-            
+            const prayerError = form.querySelector('#prayerRequest-error');
+            if (prayerError) prayerError.textContent = '';
         } catch (error) {
-            this.showNotification('There was an error submitting your prayer request. Please try again.', 'error');
+            this.showNotification('There was an error processing your prayer request. Please try again.', 'error');
         } finally {
-            // Reset button state
             btnText.style.display = 'inline';
             btnLoading.style.display = 'none';
             submitBtn.disabled = false;
@@ -382,32 +666,19 @@ class ChurchWebsite {
         return true;
     }
 
-    async submitPrayerRequest(form) {
+    async submitPrayerForm(form) {
         const formData = new FormData(form);
-        const data = {
-            name: formData.get('name') || 'Anonymous',
-            email: formData.get('email') || 'No email provided',
-            prayerRequest: formData.get('prayerRequest'),
-            isAnonymous: formData.get('anonymous') === 'on',
-            timestamp: new Date().toISOString()
-        };
-        
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // For now, just log the data (replace with actual API call)
-        console.log('Prayer request data:', data);
-        
-        // You can implement actual API call here:
-        // const response = await fetch('/api/prayer-requests', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(data)
-        // });
-        // 
-        // if (!response.ok) {
-        //     throw new Error('Failed to submit prayer request');
-        // }
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                Accept: 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Prayer form submission failed');
+        }
     }
 
     showNotification(message, type = 'info') {
@@ -539,4 +810,4 @@ style.textContent = `
         opacity: 0.8;
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

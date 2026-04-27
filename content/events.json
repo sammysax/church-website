@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "title": "Joseph of our time",
+      "tag": "Youth For Christ",
+      "date": "2025-11-21",
+      "time": "10 PM (Vigil)",
+      "description": "A non-denominational 3-day program focusing on the theme \"Joseph of our time\".",
+      "featured": true
+    },
+    {
+      "title": "Joseph of our time",
+      "tag": "Youth For Christ",
+      "date": "2025-11-22",
+      "time": "6 PM",
+      "description": "A non-denominational 3-day program focusing on the theme \"Joseph of our time\".",
+      "featured": true
+    }
+  ]
+}
