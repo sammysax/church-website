@@ -66,6 +66,7 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 6.75rem; /* fixed header + title breathing room */
     font-size: 16px;
 }
 
@@ -114,6 +115,8 @@ a:hover {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
+    min-width: 0;
+    width: 100%;
 }
 
 .btn {
@@ -314,18 +317,36 @@ a:hover {
     margin-top: 80px; /* Account for fixed header */
 }
 
-.section {
-    padding: var(--spacing-3xl) 0;
-    display: none;
+/* Only the active section may participate in layout. Section-specific rules
+   (e.g. .services-section { display: grid }) must not override display:none
+   or inactive panels stay in the document flow but stay opacity:0 → long blank scroll. */
+.section:not(.active) {
+    display: none !important;
 }
 
 .section.active {
+    display: block;
+    padding: var(--spacing-3xl) 0;
+}
+
+/* Extra top space so section titles sit below the fixed header (mobile nav can be taller). */
+.section.active:not(.hero-section) {
+    padding-top: calc(var(--spacing-3xl) + 3.25rem);
+}
+
+.hero-section.section.active {
+    display: flex;
+    padding: 0;
+}
+
+.services-section.section.active {
     display: block;
 }
 
 .section-header {
     text-align: center;
     margin-bottom: var(--spacing-3xl);
+    padding-top: var(--spacing-sm);
 }
 
 .section-title {
@@ -705,7 +726,6 @@ a:hover {
 
 /* Services Section - Modern Programs Design */
 .services-section {
-    display:grid;
     background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-bg) 100%);
     position: relative;
     overflow: hidden;
@@ -1334,14 +1354,16 @@ a:hover {
 
 .contact-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--spacing-3xl);
     align-items: start;
+    min-width: 0;
 }
 
 .contact-info {
     display: grid;
     gap: var(--spacing-xl);
+    min-width: 0;
 }
 
 .contact-card {
@@ -1350,9 +1372,18 @@ a:hover {
     border-radius: var(--radius-lg);
     border: 1px solid var(--secondary-border);
     transition: var(--transition-normal);
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--spacing-lg);
+    row-gap: var(--spacing-xs);
+    align-items: start;
+    min-width: 0;
+}
+
+.contact-card .contact-icon {
+    grid-column: 1;
+    grid-row: 1 / span 2;
 }
 
 .contact-card:hover {
@@ -1379,15 +1410,23 @@ a:hover {
 }
 
 .contact-card h3 {
+    grid-column: 2;
+    grid-row: 1;
     color: var(--primary-gold);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 0;
     font-size: 1.25rem;
 }
 
 .contact-card p {
+    grid-column: 2;
+    grid-row: 2;
     color: var(--primary-light);
     opacity: 0.9;
     margin: 0;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 
 .contact-card a {
@@ -1405,12 +1444,16 @@ a:hover {
     border-radius: var(--radius-lg);
     border: 1px solid var(--secondary-border);
     overflow: hidden;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .map-container {
     position: relative;
     width: 100%;
+    max-width: 100%;
     height: 400px;
+    min-height: 240px;
 }
 
 .map-container iframe {
@@ -1648,6 +1691,21 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+    html {
+        scroll-padding-top: 7.5rem;
+    }
+
+    .section.active:not(.hero-section) {
+        padding-top: calc(var(--spacing-3xl) + 4rem);
+    }
+
+    .map-container {
+        height: min(360px, 58vw);
+    }
+
+    .section-header {
+        margin-bottom: var(--spacing-2xl);
+    }
 
     .nav-container { position: relative; }
     .nav-toggle { display: block; }

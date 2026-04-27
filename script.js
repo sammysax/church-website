@@ -20,10 +20,16 @@ class ChurchWebsite {
     async loadContent() {
         try {
             // Load all content files
+            const jsonFetch = (path) =>
+                fetch(path, { cache: 'no-store' }).then((r) => {
+                    if (!r.ok) throw new Error(path);
+                    return r.json();
+                });
+
             const [hero, about, contact, programs, events, testimonies] = await Promise.all([
-                fetch('content/hero.json').then(r => r.json()),
-                fetch('content/about.json').then(r => r.json()),
-                fetch('content/contact.json').then(r => r.json()),
+                jsonFetch('content/hero.json'),
+                jsonFetch('content/about.json'),
+                jsonFetch('content/contact.json'),
                 this.loadPrograms(),
                 this.loadEvents(),
                 this.loadTestimonies()
@@ -90,7 +96,7 @@ class ChurchWebsite {
     async loadEvents() {
         try {
             // Primary source: one managed events file edited via CMS.
-            const response = await fetch('content/events.json');
+            const response = await fetch('content/events.json', { cache: 'no-store' });
             if (!response.ok) {
                 throw new Error('Unable to load content/events.json');
             }
@@ -114,7 +120,7 @@ class ChurchWebsite {
 
     async loadTestimonies() {
         try {
-            const response = await fetch('content/testimonies.json');
+            const response = await fetch('content/testimonies.json', { cache: 'no-store' });
             if (!response.ok) {
                 throw new Error('Unable to load content/testimonies.json');
             }
@@ -186,9 +192,10 @@ class ChurchWebsite {
 
         // Update values
         if (valuesList && data.values && Array.isArray(data.values)) {
-            valuesList.innerHTML = data.values.map(value => 
-                `<li>${value}</li>`
-            ).join('');
+            valuesList.innerHTML = data.values.map((value) => {
+                const text = typeof value === 'string' ? value : (value && value.value) || '';
+                return `<li>${text}</li>`;
+            }).join('');
         }
 
         // Update stats
@@ -430,6 +437,9 @@ class ChurchWebsite {
     }
 
     animateSectionTransition(currentSection, targetSection) {
+        // Jump to top immediately so users never land in a "blank" gap below the header
+        window.scrollTo(0, 0);
+
         // Fade out current section
         currentSection.style.opacity = '0';
         currentSection.style.transform = 'translateY(-20px)';
@@ -448,11 +458,7 @@ class ChurchWebsite {
             targetSection.style.opacity = '1';
             targetSection.style.transform = 'translateY(0)';
             
-            // Scroll to top smoothly
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            window.scrollTo(0, 0);
         }, 300);
     }
 
