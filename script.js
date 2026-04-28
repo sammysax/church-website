@@ -156,14 +156,44 @@ class ChurchWebsite {
     }
 
     populateAbout(data) {
-        const superintendent = document.querySelector('.about-card:has(h3:contains("Leadership")) p strong');
-        const missionCard = document.querySelector('.about-card:has(h3:contains("Mission")) p');
-        const visionCard = document.querySelector('.about-card:has(h3:contains("Vision")) p');
-        const valuesList = document.querySelector('.values-list');
-        const communityStat = document.getElementById('community-members-stat');
-        const yearsStat = document.querySelector('.stat-item:last-child .stat-number');
+        // Find cards by iterating through them
+        const aboutCards = document.querySelectorAll('.about-card');
+        
+        // Update superintendent - find card with "Leadership" h3
+        for (const card of aboutCards) {
+            const h3 = card.querySelector('h3');
+            if (h3 && h3.textContent.includes('Leadership')) {
+                if (data.superintendendent) {
+                    const p = card.querySelector('p');
+                    if (p) p.innerHTML = `<strong>General Superintendent:</strong> ${data.superintendendent}`;
+                }
+                break;
+            }
+        }
 
-        // Update superintendent
+        // Update mission - find card with "Mission" h3
+        for (const card of aboutCards) {
+            const h3 = card.querySelector('h3');
+            if (h3 && h3.textContent.includes('Mission')) {
+                if (data.mission) {
+                    const p = card.querySelector('p');
+                    if (p) p.textContent = data.mission;
+                }
+                break;
+            }
+        }
+
+        // Update vision - find card with "Vision" h3
+        for (const card of aboutCards) {
+            const h3 = card.querySelector('h3');
+            if (h3 && h3.textContent.includes('Vision')) {
+                if (data.vision) {
+                    const p = card.querySelector('p');
+                    if (p) p.textContent = data.vision;
+                }
+                break;
+            }
+        }
         const leadershipCard = Array.from(document.querySelectorAll('.about-card')).find(card => 
             card.querySelector('h3')?.textContent.includes('Leadership')
         );
@@ -191,6 +221,10 @@ class ChurchWebsite {
         }
 
         // Update values
+        const valuesList = document.querySelector('.values-list');
+        const communityStat = document.getElementById('community-members-stat');
+        const yearsStat = document.querySelector('.stat-item:last-child .stat-number');
+        
         if (valuesList && data.values && Array.isArray(data.values)) {
             valuesList.innerHTML = data.values.map((value) => {
                 const text = typeof value === 'string' ? value : (value && value.value) || '';
