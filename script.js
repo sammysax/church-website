@@ -107,11 +107,19 @@ class ChurchWebsite {
                 throw new Error('Invalid events payload format');
             }
 
-            return events.filter(e => e && e.date).sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return dateA - dateB;
-            });
+            // TEMPORARILY SHOW ALL EVENTS (including past) FOR TESTING
+            // To hide past events, add this filter back:
+            // const today = new Date();
+            // today.setHours(0, 0, 0, 0);
+            // .filter(e => { const eventDate = new Date(e.date); eventDate.setHours(0,0,0,0); return eventDate >= today; })
+
+            return events
+                .filter(e => e && e.date)
+                .sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateA - dateB;
+                });
         } catch (error) {
             console.error('Error loading events:', error);
             return [];
@@ -297,7 +305,29 @@ class ChurchWebsite {
 
     populateEvents(events) {
         const eventsContainer = document.querySelector('.events-grid');
-        if (!eventsContainer || !events || events.length === 0) return;
+        
+        // If no events from JSON, keep the hardcoded HTML events
+        if (!events || events.length === 0) {
+            return;
+        }
+        
+        if (!eventsContainer) {
+            return;
+        }
+        
+        // Check if all events are in the past - if so, keep HTML fallback
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const hasFutureEvents = events.some(event => {
+            const eventDate = new Date(event.date);
+            eventDate.setHours(0, 0, 0, 0);
+            return eventDate >= today;
+        });
+        
+        // If no future events, keep the hardcoded HTML fallback
+        if (!hasFutureEvents) {
+            return;
+        }
 
         const formatDate = (dateString) => {
             const date = new Date(dateString);
