@@ -315,19 +315,8 @@ class ChurchWebsite {
             return;
         }
         
-        // Check if all events are in the past - if so, keep HTML fallback
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const hasFutureEvents = events.some(event => {
-            const eventDate = new Date(event.date);
-            eventDate.setHours(0, 0, 0, 0);
-            return eventDate >= today;
-        });
-        
-        // If no future events, keep the hardcoded HTML fallback
-        if (!hasFutureEvents) {
-            return;
-        }
+        // TEMPORARILY SHOW ALL EVENTS (including past) FOR TESTING
+        // Removed future-only check to show all events
 
         const formatDate = (dateString) => {
             const date = new Date(dateString);
