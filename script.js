@@ -107,14 +107,18 @@ class ChurchWebsite {
                 throw new Error('Invalid events payload format');
             }
 
-            // TEMPORARILY SHOW ALL EVENTS (including past) FOR TESTING
-            // To hide past events, add this filter back:
-            // const today = new Date();
-            // today.setHours(0, 0, 0, 0);
-            // .filter(e => { const eventDate = new Date(e.date); eventDate.setHours(0,0,0,0); return eventDate >= today; })
+            // Show only today/future events.
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             return events
-                .filter(e => e && e.date)
+                .filter((e) => {
+                    if (!e || !e.date) return false;
+                    const eventDate = new Date(e.date);
+                    if (Number.isNaN(eventDate.getTime())) return false;
+                    eventDate.setHours(0, 0, 0, 0);
+                    return eventDate >= today;
+                })
                 .sort((a, b) => {
                     const dateA = new Date(a.date);
                     const dateB = new Date(b.date);
@@ -993,15 +997,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Add CSS for animations
 const style = document.createElement('style');
 style.textContent = `
+    /* Keep sections visible in the normal scrolling layout. */
     .section {
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    
-    .section.active {
         opacity: 1;
-        transform: translateY(0);
+        transform: none;
     }
     
     .service-card,
@@ -1009,8 +1008,6 @@ style.textContent = `
     .event-card,
     .about-card,
     .contact-card {
-        opacity: 0;
-        transform: translateY(30px);
         transition: opacity 0.6s ease, transform 0.6s ease;
     }
     
