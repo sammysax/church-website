@@ -330,9 +330,10 @@ class ChurchWebsite {
             normalized = normalized.replace(/^\.\.\//, '');
             normalized = normalized.replace(/^\/static\//, '/');
             normalized = normalized.replace(/^static\//, '/');
-            if (normalized.startsWith('/images/uploads/')) return normalized;
+            if (normalized.startsWith('/images/uploads/')) return `/static${normalized}`;
+            if (normalized.startsWith('/static/images/uploads/')) return normalized;
             const uploadsIndex = normalized.indexOf('/images/uploads/');
-            if (uploadsIndex !== -1) return normalized.slice(uploadsIndex);
+            if (uploadsIndex !== -1) return `/static${normalized.slice(uploadsIndex)}`;
             if (normalized.startsWith('images/uploads/')) return `/${normalized}`;
             return normalized;
         };
