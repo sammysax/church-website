@@ -9,7 +9,7 @@
       "featured": true
     },
     {
-      "flyer": "/images/uploads/wd.png",
+      "flyer": "static/images/uploads/wd.png",
       "endDate": "2026-05-24",
       "time": "",
       "featured": true,
