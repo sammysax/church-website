@@ -1269,16 +1269,29 @@ a:hover {
 
 .event-flyer-wrap {
     width: 100%;
-    max-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
     background: var(--secondary-bg);
+    max-height: 45vh;
 }
 
 .event-flyer {
     width: 100%;
     height: auto;
+    max-height: 100%;
     display: block;
-    object-fit: cover;
+    object-fit: fit;
+}
+
+/* Responsive adjustments for flyer height */
+@media (max-width: 900px) {
+    .event-flyer-wrap { max-height: 40vh; }
+}
+
+@media (max-width: 480px) {
+    .event-flyer-wrap { max-height: 30vh; }
 }
 
 .event-date {
