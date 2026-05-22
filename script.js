@@ -322,6 +322,21 @@ class ChurchWebsite {
         // TEMPORARILY SHOW ALL EVENTS (including past) FOR TESTING
         // Removed future-only check to show all events
 
+        const normalizeImagePath = (imagePath) => {
+            if (!imagePath || typeof imagePath !== 'string') return '';
+            let normalized = imagePath.replace(/\\/g, '/').trim();
+            if (!normalized) return '';
+            if (/^(https?:)?\/\//i.test(normalized)) return normalized;
+            normalized = normalized.replace(/^\.\.\//, '');
+            normalized = normalized.replace(/^\/static\//, '/');
+            normalized = normalized.replace(/^static\//, '/');
+            if (normalized.startsWith('/images/uploads/')) return normalized;
+            const uploadsIndex = normalized.indexOf('/images/uploads/');
+            if (uploadsIndex !== -1) return normalized.slice(uploadsIndex);
+            if (normalized.startsWith('images/uploads/')) return `/${normalized}`;
+            return normalized;
+        };
+
         const formatDate = (dateString) => {
             const date = new Date(dateString);
             const day = date.getDate();
@@ -331,22 +346,32 @@ class ChurchWebsite {
         };
 
         eventsContainer.innerHTML = events.map(event => {
-            const { day, month, year } = formatDate(event.date);
+            const startDate = formatDate(event.date);
+            const endDate = event.endDate ? formatDate(event.endDate) : null;
+            const flyerUrl = normalizeImagePath(event.flyer || event.image || '');
+            const detailsText = event.details || event.duration || '';
+
+            let dateRangeHtml = `<span class="date-range">${startDate.month} ${startDate.day}, ${startDate.year}`;
+            if (endDate) {
+                dateRangeHtml += ` - ${endDate.month} ${endDate.day}, ${endDate.year}`;
+            }
+            dateRangeHtml += `</span>`;
+
             return `
-                <div class="event-card">
+                <article class="event-card">
+                    ${flyerUrl ? `<div class="event-flyer-wrap"><img src="${flyerUrl}" alt="${event.title} flyer" class="event-flyer" loading="lazy"></div>` : ''}
                     <div class="event-date">
-                        <span class="date-day">${day}</span>
-                        <span class="date-month">${month}</span>
-                        <span class="date-year">${year}</span>
+                        ${dateRangeHtml}
                     </div>
                     <div class="event-content">
                         ${event.tag ? `<span class="event-tag">${event.tag}</span>` : ''}
                         <h3>${event.title}</h3>
                         ${event.time ? `<p class="event-time">${event.time}</p>` : ''}
+                        ${detailsText ? `<p class="event-details">${detailsText.replace(/\n/g, '<br>')}</p>` : ''}
                         ${event.description ? `<p class="event-description">${event.description}</p>` : ''}
                         <a href="#contact" class="event-link">Learn More</a>
                     </div>
-                </div>
+                </article>
             `;
         }).join('');
     }

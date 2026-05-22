@@ -66,8 +66,11 @@ collections:
             fields:
               - {label: "Event Title", name: "title", widget: "string"}
               - {label: "Event Tag", name: "tag", widget: "string", required: false}
-              - {label: "Event Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false}
+              - {label: "Event Start Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false}
+              - {label: "Event End Date", name: "endDate", widget: "datetime", format: "YYYY-MM-DD", time_format: false, required: false}
               - {label: "Event Time", name: "time", widget: "string", required: false}
+              - {label: "Event Flyer", name: "flyer", widget: "image", required: false}
+              - {label: "Event Details", name: "details", widget: "text", required: false}
               - {label: "Event Description", name: "description", widget: "text", required: false}
               - {label: "Featured", name: "featured", widget: "boolean", default: false, required: false}
 
