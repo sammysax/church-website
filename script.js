@@ -348,7 +348,7 @@ class ChurchWebsite {
         eventsContainer.innerHTML = events.map(event => {
             const startDate = formatDate(event.date);
             const endDate = event.endDate ? formatDate(event.endDate) : null;
-            const flyerUrl = normalizeImagePath(event.flyer || event.image || '');
+            const flyerUrl = normalizeImagePath(event.flyer || '');
             const detailsText = event.details || event.duration || '';
 
             let dateRangeHtml = `<span class="date-range">${startDate.month} ${startDate.day}, ${startDate.year}`;
