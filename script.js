@@ -370,7 +370,7 @@ class ChurchWebsite {
                         ${event.time ? `<p class="event-time">${event.time}</p>` : ''}
                         ${detailsText ? `<p class="event-details">${detailsText.replace(/\n/g, '<br>')}</p>` : ''}
                         ${event.description ? `<p class="event-description">${event.description}</p>` : ''}
-                        <a href="#contact" class="event-link">Learn More</a>
+                        <a href="https://www.facebook.com/jesusinsurancetabernacle/" target="_blank" rel="noopener noreferrer" class="event-link">Learn More</a>
                     </div>
                 </article>
             `;
