@@ -9,16 +9,25 @@
       "featured": true
     },
     {
-      "title": "Faithful Stewardship (Matt 25 : 13 - 30)",
-      "tag": "Worker's Annual Program",
-      "date": "2026-05-22",
+      "flyer": "/images/uploads/wd.png",
+      "details": "",
       "endDate": "2026-05-24",
       "time": "",
-      "description": "",
-      "details": "",
-      "duration": "",
       "featured": true,
-      "flyer": "/images/uploads/wd.png"
+      "date": "2026-05-22",
+      "duration": "",
+      "title": "Faithful Stewardship (Matt 25 : 13 - 30)",
+      "tag": "Worker's Annual Program",
+      "description": ""
+    },
+    {
+      "featured": true,
+      "title": "Oil Of Gladness",
+      "tag": "3 Third Special Sunday Anointing Service",
+      "date": "2026-06-21",
+      "endDate": "2026-07-19",
+      "time": "10 AM",
+      "flyer": "/images/uploads/oil-of-gladness.png"
     }
   ]
 }
