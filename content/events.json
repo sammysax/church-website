@@ -28,6 +28,12 @@
       "endDate": "2026-07-19",
       "time": "10 AM",
       "flyer": "/images/uploads/oil-of-gladness.png"
+    },
+    {
+      "featured": false,
+      "title": "Praise God ",
+      "tag": "Pastor Honoring Day (1 Thess 5:12-13)",
+      "date": "2026-07-12"
     }
   ]
 }
