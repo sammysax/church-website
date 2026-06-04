@@ -22,12 +22,21 @@
     },
     {
       "featured": true,
-      "title": "Oil Of Gladness",
+      "title": "Theme: Oil Of Gladness",
       "tag": "3 Third Special Sunday Anointing Service",
       "date": "2026-06-21",
       "endDate": "2026-07-19",
       "time": "10 AM",
       "flyer": "/images/uploads/oil-of-gladness.png"
+    },
+    {
+      "featured": false,
+      "tag": "Women Of Power Annual Program ",
+      "title": "Theme: Women Of Great Purpose",
+      "date": "2026-06-24",
+      "endDate": "2026-06-28",
+      "time": "10AM",
+      "flyer": "/images/uploads/picsart_26-05-31_02-06-25-983.png"
     },
     {
       "featured": false,
