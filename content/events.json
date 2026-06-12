@@ -40,10 +40,19 @@
     },
     {
       "featured": false,
-      "title": "Praise God ",
+      "title": "Theme: Praise God ",
       "tag": "Pastor Honoring Day (1 Thess 5:12-13)",
       "date": "2026-07-12",
       "time": "10 AM"
+    },
+    {
+      "featured": false,
+      "title": "Theme: Olugbeja Nla ",
+      "tag": "21 Days Annual Fasting And Prayer Vigil ",
+      "date": "2026-08-03",
+      "endDate": "2026-08-31",
+      "time": "10 PM - 3AM (DAILY) | Friday (11 PM - 5AM)",
+      "flyer": "/images/uploads/1000467098.jpg"
     }
   ]
 }
