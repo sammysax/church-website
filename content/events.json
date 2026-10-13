@@ -53,6 +53,14 @@
       "endDate": "2026-08-31",
       "time": "10 PM - 3AM (DAILY) | Friday (11 PM - 5AM)",
       "flyer": "/images/uploads/1000467098.jpg"
+    },
+    {
+      "featured": true,
+      "title": "Theme: New Generation ",
+      "tag": "Youth Annual Program ",
+      "date": "2026-10-16",
+      "endDate": "2026-10-18",
+      "flyer": "/images/uploads/7323.png"
     }
   ]
 }
